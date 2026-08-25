@@ -198,11 +198,30 @@ class Dinleyici(object):
         return None
 
 
+# stdin bir terminale bagli mi.  Degilse (nohup, boru, betik icinden
+# calistirma) select onu surekli "hazir" gosterir ve readline bos doner;
+# bu, her tusu "ENTER'a basildi" sanip atlamaya yol acar.  O yuzden
+# terminal yoksa klavye hic dinlenmez, yalnizca zaman asimi isler.
+STDIN_TERMINAL = False
+try:
+    STDIN_TERMINAL = sys.stdin.isatty()
+except Exception:
+    pass
+
+
 def girdi_var_mi():
-    """Klavyeden ENTER/q gelmis mi (engellemeden bakar)."""
+    """Klavyeden ENTER/q gelmis mi (engellemeden bakar).
+
+    -> "q", "" (ENTER) ya da None (bir sey gelmedi / terminal yok)
+    """
+    if not STDIN_TERMINAL:
+        return None
     try:
         if select.select([sys.stdin], [], [], 0)[0]:
-            return sys.stdin.readline().strip().lower()
+            satir = sys.stdin.readline()
+            if not satir:           # EOF - terminal kapanmis
+                return None
+            return satir.strip().lower()
     except Exception:
         pass
     return None
@@ -218,14 +237,21 @@ def rehberli_kayit(dinleyici, tus_asimi=25.0):
     print("  Kumanda ogretme")
     print("  " + "-" * 56)
     print("  Her tus icin kumandada ilgili tusa BIR KEZ bas.")
-    print("  Atlamak icin ENTER, bitirmek icin  q + ENTER")
+    if STDIN_TERMINAL:
+        print("  Atlamak icin ENTER, bitirmek icin  q + ENTER")
+    else:
+        # Terminal yoksa klavye okunamaz; kullanici neden ENTER'in ise
+        # yaramadigini bilsin.
+        print("  (terminal yok: ENTER/q calismaz, basilmayan tus %d sn"
+              " sonra atlanir)" % int(tus_asimi))
     print("  " + "-" * 56)
     print()
 
     kayitlar = []          # (scancode, keycode_adi, aciklama)
     kullanilan = {}        # scancode -> keycode adi (ayni kodu iki kez almamak icin)
 
-    for keycode_adi, aciklama in TUS_LISTESI:
+    try:
+      for keycode_adi, aciklama in TUS_LISTESI:
         sys.stdout.write("  %-22s : " % aciklama)
         sys.stdout.flush()
         dinleyici.bosalt()
@@ -257,6 +283,10 @@ def rehberli_kayit(dinleyici, tus_asimi=25.0):
         kayitlar.append((sonuc, keycode_adi, aciklama))
         print("0x%08X" % sonuc)
         time.sleep(0.35)       # tusu birakmasi icin kisa bekleme
+    except KeyboardInterrupt:
+        # Ctrl+C: o ana kadar kaydedilenler kaybolmasin
+        print()
+        print("  kesildi, toplananlar yazilacak")
 
     return kayitlar
 
@@ -276,7 +306,8 @@ def serbest_kayit(dinleyici, sure=120.0):
     kayitlar = []
     gorulen = set()
     bitis = time.time() + sure
-    while time.time() < bitis:
+    try:
+      while time.time() < bitis:
         if girdi_var_mi() == "q":
             break
         sc = dinleyici.bekle(0.5)
@@ -287,6 +318,9 @@ def serbest_kayit(dinleyici, sure=120.0):
         kayitlar.append((sc, ad, "adlandirilmadi"))
         print("  %2d. 0x%08X   komut 0x%02X" % (len(gorulen), sc, (sc >> 8) & 0xFF))
         sys.stdout.flush()
+    except KeyboardInterrupt:
+        print()
+        print("  kesildi, toplananlar yazilacak")
     return kayitlar
 
 
@@ -385,16 +419,47 @@ def main():
         print()
         print("  iptal edildi")
         kayitlar = []
+    except Exception as e:
+        print()
+        print("  kayit sirasinda hata: %s" % e)
+        kayitlar = []
     finally:
         dinleyici.kapat()
 
     if not kayitlar:
         print()
         print("  hicbir tus kaydedilmedi, dosya yazilmadi")
+        print()
+        print("  Kumandadan tek bir kod bile gelmediyse sebep genelde sudur:")
+        print("    - Enigma2 girdi aygitini kilitlemis olabilir:")
+        print("        init 4    ->  kaydi tekrar dene  ->  init 3")
+        print("    - Yanlis aygit dinleniyor olabilir; sirayla dene:")
+        for a in rc_aygitlari()[:4]:
+            print("        python3 %s --aygit %s" % (os.path.basename(__file__), a))
+        print("    - Kumandanin pili bitmis ya da alici goremiyor olabilir")
         return 1
 
-    keymap_yaz(cikti, kayitlar, aygit)
+    try:
+        keymap_yaz(cikti, kayitlar, aygit)
+    except OSError as e:
+        # Bulundugun dizin yazilamiyor olabilir; kaydi kaybetmemek icin
+        # /tmp'ye dusulur.
+        print()
+        print("  %s yazilamadi (%s)" % (cikti, e))
+        yedek = os.path.join("/tmp", os.path.basename(cikti) or "kumanda.keymap")
+        try:
+            keymap_yaz(yedek, kayitlar, aygit)
+            cikti = yedek
+            print("  bunun yerine buraya yazildi: %s" % cikti)
+        except OSError as e2:
+            print("  yedek konuma da yazilamadi (%s)" % e2)
+            print()
+            print("  Kayitlar kaybolmasin diye asagida:")
+            for sc, ad, _acik in kayitlar:
+                print("      0x%08x %s" % (sc, ad))
+            return 1
 
+    cikti = os.path.abspath(cikti)
     print()
     print("  %d tus kaydedildi -> %s" % (len(kayitlar), cikti))
     adresler = adres_dagilimi(kayitlar)
