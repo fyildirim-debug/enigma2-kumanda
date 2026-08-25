@@ -1,0 +1,67 @@
+# Next Innova 4K orijinal kumandasi -> OpenATV / Enigma2
+# Protokol: NEC extended, cihaz adresi 0x2962
+# Kaynak: cihazdan /dev/input/event0 uzerinden okunan gercek scancode'lar
+#
+# Not: kumandanin ust blogu (TV Guc, SOURCE, TV VOL/OK) 0x0E0E adresini
+# kullanir; o tuslar TV'yi kontrol eder, alicida islevi yoktur, eklenmedi.
+#
+# scancode   keycode
+
+# --- rakamlar ---
+0x296200ff KEY_0
+0x296201fe KEY_1
+0x296202fd KEY_2
+0x296203fc KEY_3
+0x296204fb KEY_4
+0x296205fa KEY_5
+0x296206f9 KEY_6
+0x296207f8 KEY_7
+0x296208f7 KEY_8
+0x296209f6 KEY_9
+
+# --- guc / temel ---
+0x29620af5 KEY_POWER
+0x29620cf3 KEY_MUTE
+0x29620ff0 KEY_TEXT
+
+# --- ust sira ---
+0x296244bb KEY_EPG
+0x29621ee1 KEY_FAVORITES
+0x29621fe0 KEY_VOD
+0x29621be4 KEY_TV2
+
+# --- ses / kanal ---
+0x296240bf KEY_VOLUMEUP
+0x296241be KEY_VOLUMEDOWN
+0x296242bd KEY_CHANNELUP
+0x296243bc KEY_CHANNELDOWN
+
+# --- gezinme ---
+0x296245ba KEY_UP
+0x296246b9 KEY_LEFT
+0x296247b8 KEY_OK
+0x296248b7 KEY_RIGHT
+0x296249b6 KEY_DOWN
+0x29624ab5 KEY_MENU
+0x29624bb4 KEY_EXIT
+0x29624cb3 KEY_INFO
+0x29624db2 KEY_SAT
+0x29624eb1 KEY_BACK
+
+# --- renkli tuslar ---
+0x296250af KEY_RED
+0x296251ae KEY_GREEN
+0x296252ad KEY_YELLOW
+0x296253ac KEY_BLUE
+
+# --- oynatma / kayit ---
+0x296254ab KEY_RECORD
+0x296255aa KEY_PLAYPAUSE
+0x296256a9 KEY_REWIND
+0x296257a8 KEY_STOP
+0x29625ba4 KEY_SLEEP
+
+# --- diger ---
+0x29620df2 KEY_VMODE
+0x29620ef1 KEY_MODE
+0x29621de2 KEY_VIDEO

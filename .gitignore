@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.log
+kumanda.keymap
+benim.keymap
+ham.keymap
