@@ -65,7 +65,7 @@ Kumanda çalışıyorsa: Eklentiler → *Kumanda Tanıtma Sihirbazı*.
 - Kumandada olmayan tuş → **OK** (atlanır)
 - Yanlış kayıt → **EXIT** (önceki tuşa döner)
 - Erken bitir → **OK'a 3 sn basılı tut**
-- 5 dk tuşa basılmazsa toplananları kaydedip kapanır
+- 10 dk tuşa basılmazsa toplananları kaydedip kapanır
 
 Bitince harita kernel'e yazılır, kumanda hemen çalışır. Harita `/etc/kumanda_sihirbazi.keymap` dosyasına kaydedilir ve her Enigma2 açılışında eklenti tarafından yeniden yüklenir. Kayıt: `/tmp/kumanda_sihirbazi.log`.
 

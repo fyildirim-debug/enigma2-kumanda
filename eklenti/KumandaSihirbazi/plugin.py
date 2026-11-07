@@ -58,7 +58,7 @@ MSC_SCAN = 0x04
 TUTMA_ESIGI = 0.35       # bu sureden kisa aralikla gelen ayni kod = basili tutma
 SESSIZ_SURE = 0.6        # kayittan sonra bu sure butun olaylar yok sayilir
 BITIR_TUTMA = 3.0        # OK bu kadar basili tutulursa erken bitir
-BOSTA_ASIMI = 300        # hic tusa basilmazsa (sn) kaydedip kapanir
+BOSTA_ASIMI = 600        # hic tusa basilmazsa (sn) kaydedip kapanir
 SINYAL_UYARI = 25        # ilk adimda bu kadar sinyal gelmezse ipucu goster
 
 
@@ -445,8 +445,9 @@ class KumandaSihirbazi(Screen):
         self["alt"].setText("Kaydedilen tuş: %d     ·     %d:%02d boyunca tuşa basılmazsa kaydedip kapanır"
                             % (kayitli, max(kalan, 0) // 60, max(kalan, 0) % 60))
         if not self.sinyal_goruldu and simdi - self.baslangic > SINYAL_UYARI:
-            self.durumYaz("Sinyal gelmiyor. Pilleri ve kumandayı alıcıya doğrulttuğunu kontrol et. "
-                          "Alıcı yalnız NEC kodlu kumandaları tanır.", uyari=True)
+            self.durumYaz("Sinyal yok: pilleri kontrol et, kumandayı kutuya doğrult.", uyari=True)
+            if self.adim == 0:
+                self["aciklama"].setText("Not: alıcı yalnız NEC kodlu kumandaları tanır")
         if kalan <= 0:
             self.bitir("Uzun süre tuşa basılmadı.")
 
