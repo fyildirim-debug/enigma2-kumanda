@@ -44,6 +44,32 @@ Yazılan tablo bellekte tutulur ve cihaz kapanınca kaybolur; bu yüzden her aç
 | `kumanda_yukle.py` | alıcıda | Keymap'i kernel'e yazar (tek seferlik) |
 | `kur.py` | alıcıda | Kalıcı kurulum: kopyalar, açılışa bağlar, uygular |
 | `keymaps/*.keymap` | — | Hazır kod haritaları |
+| `eklenti/KumandaSihirbazi/` | alıcıda (Enigma2 eklentisi) | TV ekranından adım adım kumanda tanıtır |
+
+## Ekrandan tanıtma sihirbazı (önerilen)
+
+Kumanda kaybolduysa ve yeni/farklı bir kumanda tanıtacaksan terminal gerekmez: `eklenti/KumandaSihirbazi` bir Enigma2 eklentisidir, TV ekranında tuşları tek tek sorar.
+
+**Kurulum:** klasörü `/usr/lib/enigma2/python/Plugins/Extensions/KumandaSihirbazi/` altına kopyala, Enigma2'yi yeniden başlat (`killall enigma2`).
+
+**Başlatma (kumanda yokken):** `/tmp/kumanda_sihirbazi_baslat` dosyasını oluşturmak yeter; eklenti 2 sn içinde ekranı açar. PC'den FTP ile:
+
+```bash
+curl -s -T /dev/null ftp://root:PAROLA@ALICI_IP/tmp/kumanda_sihirbazi_baslat
+```
+
+Kumanda çalışıyorsa: Eklentiler → *Kumanda Tanıtma Sihirbazı*.
+
+**Ekranda:**
+- 1. adım OK, 2. adım EXIT öğrenilir
+- Kumandada olmayan tuş → **OK** (atlanır)
+- Yanlış kayıt → **EXIT** (önceki tuşa döner)
+- Erken bitir → **OK'a 3 sn basılı tut**
+- 5 dk tuşa basılmazsa toplananları kaydedip kapanır
+
+Bitince harita kernel'e yazılır, kumanda hemen çalışır. Harita `/etc/kumanda_sihirbazi.keymap` dosyasına kaydedilir ve her Enigma2 açılışında eklenti tarafından yeniden yüklenir. Kayıt: `/tmp/kumanda_sihirbazi.log`.
+
+Neden eklenti: Enigma2 IR aygıtını `EVIOCGRAB` ile tekeline alır; dışarıdaki bir script ham kodu göremez. Eklenti `eRCInput.lock()` ile kilidi bırakır, `MSC_SCAN` olaylarını kendisi okur, bitince `unlock()` eder.
 
 ## Hızlı kurulum (hazır keymap varsa)
 
